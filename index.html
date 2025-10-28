@@ -17,23 +17,26 @@
     }
 
     /* ===== Snowflake Styling ===== */
-    .snowflake {
-      position: absolute;
-      width: 40px;
-      height: 40px;
-      background: background: url('https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Snow_flake_icon.svg/512px-Snow_flake_icon.svg.png') no-repeat center/contain;
-      animation: spiral 6s linear infinite;
-    }
+.snowflake {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 40px;
+  height: 40px;
+  background: url('https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Snow_flake_icon.svg/512px-Snow_flake_icon.svg.png') no-repeat center/contain;
+  transform-origin: center center;
+  animation: spiral 6s linear infinite;
+}
 
     /* ===== Spiral Animation ===== */
-    @keyframes spiral {
-      0% {
-        transform: rotate(0deg) translateX(0) rotate(0deg);
-      }
-      100% {
-        transform: rotate(360deg) translateX(150px) rotate(-360deg);
-      }
-    }
+   @keyframes spiral {
+  0% {
+    transform: rotate(0deg) translateX(100px) rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg) translateX(100px) rotate(-360deg);
+  }
+}
   </style>
 </head>
 <body>
