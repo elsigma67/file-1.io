@@ -1,46 +1,171 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Mystery Art | Snow Spiral</title>
   <style>
-    /* ===== Base Styling ===== */
-    body {
+    :root {
+      --orbit-radius: 120px;   /* radius of the circular orbit (px) */
+      --spin-duration: 6s;     /* how long a full orbit takes */
+      --snow-size: 180px;      /* image size */
+      --tx: 0px;               /* dynamic offset X (updated by JS) */
+      --ty: 0px;               /* dynamic offset Y (updated by JS) */
+    }
+
+    /* Page background */
+    html,body {
+      height: 100%;
       margin: 0;
-      height: 100vh;
       background: radial-gradient(circle at center, #002b80 0%, #000c26 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+
+    /* Center stage (fills viewport) */
+    .stage {
+      position: relative;
+      width: 100%;
+      height: 100vh;
       overflow: hidden;
     }
 
-    /* ===== Snowflake Styling ===== */
-    .snowflake {
+    /* Clickable container — adjust where the orbit is positioned */
+    a#snowLink {
       position: absolute;
       top: 50%;
       left: 50%;
-      width: 180px;
-      height: 180px;
-      background: url('snowflake.jpg') no-repeat center/contain;
-      transform-origin: center center;
-      animation: spiral 6s linear infinite;
-      filter: drop-shadow(0 0 25px rgba(255, 0, 0, 0.7));
+      /* center the anchor, then apply dynamic offsets from CSS variables */
+      transform: translate(
+        calc(-50% + var(--tx)),
+        calc(-50% + var(--ty))
+      );
+      display: block;
+      width: var(--snow-size);
+      height: var(--snow-size);
+      text-decoration: none;
+      /* cursor indicates interactivity */
+      cursor: pointer;
+      /* prevent accidental text-selection flicker */
+      -webkit-user-select: none;
+      user-select: none;
     }
 
-    /* ===== Spiral Animation ===== */
+    /* Orbiter is the element around which the snowflake orbits.
+       We set it to be centered inside the anchor so its transform-origin is center. */
+    .orbiter {
+      position: absolute;
+      inset: 0; /* fill the anchor */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none; /* let the anchor receive the clicks */
+    }
+
+    /* Snowflake visual element (image background) */
+    .snowflake {
+      width: 100%;
+      height: 100%;
+      background: url('snowflake.jpg') no-repeat center/contain;
+      transform-origin: center center;
+      pointer-events: none; /* let anchor handle clicks */
+      filter: drop-shadow(0 0 20px rgba(255, 0, 0, 0.65));
+      animation: spiral var(--spin-duration) linear infinite;
+      will-change: transform;
+    }
+
+    /* The spiral animation - rotate then translate to create orbit */
     @keyframes spiral {
       0% {
-        transform: rotate(0deg) translateX(120px) rotate(0deg);
+        transform: rotate(0deg) translateX(0px) rotate(0deg);
+      }
+      12% {
+        /* small outward ease so orbit doesn't start at zero radius visually */
+        transform: rotate(43deg) translateX(calc(var(--orbit-radius) * 0.2)) rotate(-43deg);
       }
       100% {
-        transform: rotate(360deg) translateX(120px) rotate(-360deg);
+        transform: rotate(360deg) translateX(var(--orbit-radius)) rotate(-360deg);
       }
     }
+
+    /* Small responsive adjustments */
+    @media (max-width:600px) {
+      :root { --snow-size: 120px; --orbit-radius: 80px; --spin-duration: 7s; }
+    }
+
+    /* Optional hover feedback (doesn't interfere with JS movement) */
+    a#snowLink:active .snowflake { transform: scale(0.98); }
   </style>
 </head>
 <body>
-  <div class="snowflake"></div>
+  <div class="stage">
+    <!-- Wrap the orbit inside an anchor so clicking the image goes to page2.html -->
+    <a id="snowLink" href="page2.html" aria-label="Enter the mystery">
+      <div class="orbiter">
+        <div class="snowflake" aria-hidden="true"></div>
+      </div>
+    </a>
+  </div>
+
+  <script>
+    /*******************************************************
+     * Mouse-follow/parallax for the orbit center
+     * - computes a small offset from center based on cursor
+     * - uses requestAnimationFrame + lerp for smooth motion
+     *******************************************************/
+
+    (function () {
+      // Config: how strongly the snowflake follows the mouse (0.0 - 1.0)
+      const sensitivityX = 0.08; // horizontal strength
+      const sensitivityY = 0.06; // vertical strength
+      const lerpFactor = 0.12;   // smoothing factor, smaller = smoother/slower follow
+
+      let targetX = 0, targetY = 0;
+      let currentX = 0, currentY = 0;
+
+      // update target based on mouse position relative to viewport center
+      function onMove(e) {
+        // support touch events
+        const clientX = (e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX;
+        const clientY = (e.touches && e.touches[0]) ? e.touches[0].clientY : e.clientY;
+
+        const cx = window.innerWidth / 2;
+        const cy = window.innerHeight / 2;
+
+        // distance from center (positive/negative)
+        const dx = clientX - cx;
+        const dy = clientY - cy;
+
+        // target offsets scale with sensitivity and are in px
+        targetX = dx * sensitivityX;
+        targetY = dy * sensitivityY;
+      }
+
+      // Basic linear interpolation helper
+      function lerp(a, b, t) {
+        return a + (b - a) * t;
+      }
+
+      // animation frame loop for smoothing and applying CSS variables
+      function animate() {
+        currentX = lerp(currentX, targetX, lerpFactor);
+        currentY = lerp(currentY, targetY, lerpFactor);
+
+        // apply as CSS variables on :root so CSS transform picks them up
+        document.documentElement.style.setProperty('--tx', currentX + 'px');
+        document.documentElement.style.setProperty('--ty', currentY + 'px');
+
+        requestAnimationFrame(animate);
+      }
+
+      // Start
+      window.addEventListener('mousemove', onMove, { passive: true });
+      window.addEventListener('touchmove', onMove, { passive: true });
+      // Optionally reset on leave for nicer behavior:
+      window.addEventListener('mouseleave', () => { targetX = 0; targetY = 0; });
+      window.addEventListener('resize', () => { /* no-op but helpful if you later adapt */ });
+
+      requestAnimationFrame(animate);
+    })();
+  </script>
 </body>
 </html>
