@@ -9,7 +9,7 @@
     body {
       margin: 0;
       height: 100vh;
-      background: radial-gradient(circle at center, #0033cc 0%, #001133 100%);
+      background: radial-gradient(circle at center, #002b80 0%, #000c26 100%);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -17,26 +17,27 @@
     }
 
     /* ===== Snowflake Styling ===== */
-.snowflake {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 40px;
-  height: 40px;
-  background: red; url('https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Snow_flake_icon.svg/512px-Snow_flake_icon.svg.png') no-repeat center/contain;
-  transform-origin: center center;
-  animation: spiral 6s linear infinite;
-}
+    .snowflake {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 180px;
+      height: 180px;
+      background: url('images/snowflake.jpg') no-repeat center/contain;
+      transform-origin: center center;
+      animation: spiral 6s linear infinite;
+      filter: drop-shadow(0 0 25px rgba(255, 0, 0, 0.7));
+    }
 
     /* ===== Spiral Animation ===== */
-   @keyframes spiral {
-  0% {
-    transform: rotate(0deg) translateX(100px) rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg) translateX(100px) rotate(-360deg);
-  }
-}
+    @keyframes spiral {
+      0% {
+        transform: rotate(0deg) translateX(120px) rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg) translateX(120px) rotate(-360deg);
+      }
+    }
   </style>
 </head>
 <body>
