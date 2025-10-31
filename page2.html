@@ -1,19 +1,89 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Page 2 — Mystery</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Skeleton Interface</title>
   <style>
-    body { margin:0; height:100vh; display:flex; align-items:center; justify-content:center;
-           background: #070616; color:#fff; font-family: system-ui; }
-    a { color: #9ad; text-decoration:none; padding:12px 18px; border:1px solid rgba(255,255,255,0.06); border-radius:8px;}
+    html, body {
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background-color: hsl(0, 60%, 39%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Skeleton container */
+    .skeleton {
+      position: relative;
+      width: 180px;
+      height: 500px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-family: sans-serif;
+    }
+
+    /* Skeleton visual placeholder */
+    .skeleton-outline {
+      position: absolute;
+      inset: 0;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 100px;
+      pointer-events: none;
+    }
+
+    /* Clickable zones */
+    .zone {
+      position: absolute;
+      width: 100%;
+      text-align: center;
+      cursor: pointer;
+      color: white;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+
+    .zone:hover {
+      color: black;
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Individual placement */
+    .foot { bottom: 0; height: 60px; line-height: 60px; }
+    .leg { bottom: 60px; height: 120px; line-height: 120px; }
+    .spine { bottom: 180px; height: 140px; line-height: 140px; }
+    .skull { top: 0; height: 80px; line-height: 80px; }
+    .arm-left, .arm-right {
+      position: absolute;
+      width: 60px;
+      height: 150px;
+      background-color: rgba(255,255,255,0.05);
+      top: 150px;
+      transition: transform 0.6s ease;
+    }
+
+    .arm-left { left: -70px; transform-origin: top right; }
+    .arm-right { right: -70px; transform-origin: top left; }
+
+    .arm-left:hover { transform: rotate(-10deg); }
+    .arm-right:hover { transform: rotate(10deg); }
   </style>
 </head>
 <body>
-  <div>
-    <h1>Welcome to Page 2</h1>
-    <p><a href="index.html">Back</a></p>
+  <div class="skeleton">
+    <div class="skeleton-outline"></div>
+
+    <div class="zone skull" onclick="window.location.href='skull.html'">Skull</div>
+    <div class="zone spine" onclick="window.location.href='spine.html'">Spine & Ribcage</div>
+    <div class="zone leg" onclick="window.location.href='leg.html'">Leg Bones</div>
+    <div class="zone foot" onclick="window.location.href='foot.html'">Foot Bones</div>
+
+    <div class="arm-left"></div>
+    <div class="arm-right"></div>
   </div>
 </body>
 </html>
