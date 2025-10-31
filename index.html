@@ -38,7 +38,7 @@
     }
 
     .center-image:hover {
-      filter: drop-shadow(0 0 30px hsl(254, 61%, 11%));
+      filter: drop-shadow(0 0 30px hsl(120, 35%, 16%));
       transform: scale(1.05);
     }
   </style>
@@ -61,7 +61,7 @@
     const ctx = canvas.getContext("2d");
 
     let stars = [];
-    const numStars = 50;
+    const numStars = 100; // more stars for a fuller look
 
     function resize() {
       canvas.width = window.innerWidth;
@@ -72,10 +72,11 @@
     resize();
 
     function createStar() {
-      const startX = Math.random() * window.innerWidth * 0.2; // bottom-left area
-      const startY = window.innerHeight + Math.random() * 200; // start below screen
-      const speed = 2 + Math.random() * 3;
-      const length = 80 + Math.random() * 50;
+      // Start anywhere on the screen
+      const startX = Math.random() * canvas.width;
+      const startY = Math.random() * canvas.height;
+      const speed = 1 + Math.random() * 3;
+      const length = 60 + Math.random() * 60;
       return { x: startX, y: startY, speed, length };
     }
 
@@ -91,11 +92,12 @@
         ctx.lineTo(star.x - star.length * 0.7, star.y + star.length * 0.7);
         ctx.stroke();
 
+        // move diagonally
         star.x += star.speed * 1.4;
         star.y -= star.speed * 1.4;
       }
 
-      // recycle stars
+      // recycle stars that move off screen
       stars = stars.filter(s => s.y + s.length > 0 && s.x - s.length < canvas.width);
       while (stars.length < numStars) stars.push(createStar());
 
