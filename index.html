@@ -1,112 +1,245 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Home Page</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Home — Tree</title>
   <style>
-    /* GENERAL PAGE STYLING */
-    html, body {
-      height: 100%;
-      margin: 0;
-      overflow: hidden;
-      background-color: hsl(254, 61%, 11%);
-      display: flex;
-      justify-content: center;
-      align-items: center;
+    :root{
+      --bg: hsl(254, 61%, 11%);
+      --glow: hsl(120, 35%, 16%);
     }
 
-    /* SHOOTING STAR CANVAS */
-    canvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 0;
+    /* page */
+    html,body{
+      height:100%;
+      margin:0;
+      background-color:var(--bg);
+      font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+      overflow:hidden;
+      display:flex;
+      align-items:center;
+      justify-content:center;
     }
 
-    /* CENTER IMAGE */
-    .center-image {
-      position: relative;
-      z-index: 1;
-      font-size: 8rem;
-      color: white;
-      cursor: pointer;
-      transition: filter 0.4s ease, transform 0.3s ease;
-      user-select: none;
+    /* canvas full-screen (shooting stars) */
+    canvas#stars{
+      position:fixed;
+      inset:0;
+      width:100%;
+      height:100%;
+      z-index:0;
+      display:block;
     }
 
-    .center-image:hover {
-      filter: drop-shadow(0 0 30px hsl(120, 35%, 16%));
-      transform: scale(1.05);
+    /* container so the image centers above canvas */
+    .center-wrap{
+      position:relative;
+      z-index:2;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      pointer-events:auto;
+    }
+
+    /* image button */
+    .tree-btn{
+      display:inline-block;
+      width: min(48vmin, 420px); /* responsive */
+      max-width:90vw;
+      aspect-ratio: 1/1; /* keep square proportion for pixel art; adjust if your asset ratio differs */
+      border-radius:12px;
+      cursor:pointer;
+      position:relative;
+      transform-origin:center;
+      transition: transform 240ms cubic-bezier(.2,.9,.2,1);
+      -webkit-tap-highlight-color: transparent;
+      outline: none;
+      border: none;
+      background: transparent;
+    }
+
+    /* responsive image fills container */
+    .tree-btn img{
+      display:block;
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      image-rendering: pixelated; /* keeps pixel-art crisp on many displays */
+      border-radius:8px; /* soft corner if desired */
+      transition: filter 360ms ease, transform 240ms ease;
+      backface-visibility: hidden;
+      will-change: transform, filter;
+    }
+
+    /* soft colored halo using pseudo element (stronger than only drop-shadow) */
+    .tree-btn::after{
+      content:"";
+      position:absolute;
+      inset: -18%;
+      border-radius: 16px;
+      pointer-events: none;
+      filter: blur(28px);
+      opacity:0;
+      transition: opacity 300ms ease, transform 300ms ease;
+      background: radial-gradient(closest-side, color-mix(in srgb, var(--glow) 70%, transparent), transparent 60%);
+      z-index:-1;
+    }
+
+    /* drop shadow + scale on hover/focus/active */
+    .tree-btn:hover img,
+    .tree-btn:focus img,
+    .tree-btn.active img {
+      transform: scale(1.03);
+      filter: drop-shadow(0 0 26px var(--glow)) saturate(120%) brightness(105%);
+    }
+
+    .tree-btn:hover::after,
+    .tree-btn:focus::after,
+    .tree-btn.active::after {
+      opacity: 1;
+      transform: scale(1.03);
+    }
+
+    /* keyboard focus accessibility */
+    .tree-btn:focus-visible{
+      box-shadow: 0 0 0 4px rgba(255,255,255,0.06);
+      border-radius: 12px;
+    }
+
+    /* small screens: slightly smaller glow and blur so it doesn't overpower */
+    @media (max-width:520px){
+      .tree-btn::after{ filter: blur(16px); inset: -10%; }
+      .tree-btn img{ transition: filter 220ms ease, transform 180ms ease; }
     }
   </style>
 </head>
 <body>
-  <!-- Shooting star animation canvas -->
   <canvas id="stars"></canvas>
 
-  <!-- Center image placeholder -->
-  <div class="center-image" onclick="goToPage()">?</div>
+  <div class="center-wrap">
+    <!-- IMPORTANT: keep the filename exactly as you saved it.
+         If your file is in a subfolder, use that path (eg. images/tree[1].png).
+         If your filename contains brackets and you run into issues, rename to tree-1.png or tree_1.png. -->
+    <button class="tree-btn" id="treeButton" aria-label="Open page 2">
+      <img src="tree[1].png" alt="Pixel-art tree with transparent background">
+    </button>
+  </div>
 
   <script>
-    /* Redirect to page2.html */
-    function goToPage() {
-      window.location.href = "page2.html";
+    /* ---------- Navigation + touch support ---------- */
+    const btn = document.getElementById('treeButton');
+
+    // click navigates to page2.html
+    btn.addEventListener('click', () => {
+      // small press animation on click for tactile feel
+      btn.classList.add('active');
+      setTimeout(()=> btn.classList.remove('active'), 220);
+      // navigate
+      window.location.href = 'page2.html';
+    });
+
+    // for touch devices: show glow when touching and remove after short delay
+    btn.addEventListener('touchstart', () => {
+      btn.classList.add('active');
+    }, {passive:true});
+    btn.addEventListener('touchend', () => {
+      setTimeout(()=> btn.classList.remove('active'), 220);
+    });
+
+    // keyboard: Enter or Space should activate and navigate
+    btn.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        btn.click();
+      }
+    });
+
+    /* ---------- Shooting stars canvas (full-screen, random start positions) ---------- */
+    const canvas = document.getElementById('stars');
+    const ctx = canvas.getContext('2d');
+
+    let w = canvas.width = innerWidth;
+    let h = canvas.height = innerHeight;
+
+    addEventListener('resize', () => {
+      w = canvas.width = innerWidth;
+      h = canvas.height = innerHeight;
+    });
+
+    // star particles
+    const stars = [];
+    const TOTAL = 140; // adjust density: higher = more stars
+
+    function rand(min, max){ return Math.random()*(max-min)+min; }
+
+    function initStars(){
+      stars.length = 0;
+      for(let i=0;i<TOTAL;i++){
+        stars.push({
+          x: rand(0, w),
+          y: rand(0, h),
+          speed: rand(0.5, 3.2),
+          length: rand(30, 120),
+          alpha: rand(0.3, 0.95),
+        });
+      }
     }
+    initStars();
 
-    /* SHOOTING STAR ANIMATION */
-    const canvas = document.getElementById("stars");
-    const ctx = canvas.getContext("2d");
+    function draw(){
+      ctx.clearRect(0,0,w,h);
 
-    let stars = [];
-    const numStars = 100; // more stars for a fuller look
+      ctx.lineWidth = 1.2;
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = 'rgba(255,255,255,0.9)';
 
-    function resize() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-
-    window.addEventListener("resize", resize);
-    resize();
-
-    function createStar() {
-      // Start anywhere on the screen
-      const startX = Math.random() * canvas.width;
-      const startY = Math.random() * canvas.height;
-      const speed = 1 + Math.random() * 3;
-      const length = 60 + Math.random() * 60;
-      return { x: startX, y: startY, speed, length };
-    }
-
-    function drawStars() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.strokeStyle = "white";
-      ctx.lineWidth = 1.5;
-      ctx.lineCap = "round";
-
-      for (let star of stars) {
+      for(const s of stars){
         ctx.beginPath();
-        ctx.moveTo(star.x, star.y);
-        ctx.lineTo(star.x - star.length * 0.7, star.y + star.length * 0.7);
+        // draw a short streak from current position toward bottom-right -> top-left direction
+        // we want bottom-left to top-right movement: so we draw a line from (x,y) to (x - dx, y + dx)
+        const dx = s.length * 0.65;
+        ctx.moveTo(s.x, s.y);
+        ctx.lineTo(s.x - dx, s.y + dx);
+        ctx.globalAlpha = s.alpha;
         ctx.stroke();
 
-        // move diagonally
-        star.x += star.speed * 1.4;
-        star.y -= star.speed * 1.4;
+        // update position (move bottom-left -> top-right)
+        s.x += s.speed * 1.1;
+        s.y -= s.speed * 1.1;
+
+        // recycle if out of bounds (spawn at opposite edges for density)
+        if (s.x - s.length > w || s.y + s.length < 0) {
+          // respawn at random edge (prefer bottom/left)
+          const side = Math.random();
+          if (side < 0.6) { // spawn near left or bottom edges for variety
+            s.x = rand(-w * 0.05, w * 0.25);
+            s.y = h + rand(0, h * 0.15);
+          } else {
+            s.x = -rand(20, 60);
+            s.y = rand(0, h);
+          }
+          s.speed = rand(0.5, 3.2);
+          s.length = rand(30, 120);
+          s.alpha = rand(0.3, 0.95);
+        }
       }
-
-      // recycle stars that move off screen
-      stars = stars.filter(s => s.y + s.length > 0 && s.x - s.length < canvas.width);
-      while (stars.length < numStars) stars.push(createStar());
-
-      requestAnimationFrame(drawStars);
+      ctx.globalAlpha = 1;
+      requestAnimationFrame(draw);
     }
 
-    // Initialize
-    for (let i = 0; i < numStars; i++) stars.push(createStar());
-    drawStars();
+    draw();
+
+    // ensure stars are reinitialized when viewport changes drastically (optional)
+    let lastW = w, lastH = h;
+    setInterval(() => {
+      if (Math.abs(lastW - innerWidth) > 100 || Math.abs(lastH - innerHeight) > 100) {
+        w = canvas.width = innerWidth;
+        h = canvas.height = innerHeight;
+        initStars();
+        lastW = innerWidth; lastH = innerHeight;
+      }
+    }, 1000);
   </script>
 </body>
 </html>
